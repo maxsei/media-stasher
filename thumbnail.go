@@ -6,7 +6,6 @@ import (
 	"mime"
 	"os"
 	"path/filepath"
-	"strings"
 
 	// Image codecs.
 	_ "image/jpeg"
@@ -19,7 +18,10 @@ import (
 func CreateThumbnail(dst, src string) error {
 	// Filter out non images/video.
 	mimeType := mime.TypeByExtension(filepath.Ext(src))
-	mediaType := strings.Split(mimeType, "/")[0]
+	mediaType, _, err := mime.ParseMediaType(mimeType)
+	if err != nil {
+		return err
+	}
 	switch mediaType {
 	case "video":
 	case "image":
