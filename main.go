@@ -18,40 +18,6 @@ const ProgramName = "android-photo-viewer"
 var ProgramCachePath = filepath.Join(xdg.CacheHome, ProgramName)
 var ThumbnailPath = filepath.Join(ProgramCachePath, "thumbnail")
 
-var somepaths = []string{
-	"DCIM/Camera/PXL_20220328_023259941.jpg.png",
-	"DCIM/Camera/PXL_20220430_023125341.jpg.png",
-	"DCIM/Camera/PXL_20220709_214449586.jpg.png",
-	"DCIM/Camera/PXL_20211002_025541427.jpg.png",
-	"DCIM/Camera/PXL_20211225_190834969.jpg.png",
-	"DCIM/Camera/PXL_20220711_191957282.jpg.png",
-	"DCIM/Camera/PXL_20220327_215434665.jpg.png",
-	"DCIM/Camera/PXL_20220327_032609359.jpg.png",
-	"DCIM/Camera/PXL_20220617_222330755.jpg.png",
-	"DCIM/Camera/PXL_20211202_033649706.jpg.png",
-	"DCIM/Camera/PXL_20220713_002750913.jpg.png",
-	"DCIM/Camera/PXL_20220417_001410588.jpg.png",
-	"DCIM/Camera/PXL_20211017_232320886.jpg.png",
-	"DCIM/Camera/PXL_20211017_183632914.jpg.png",
-	"DCIM/Camera/PXL_20220327_175626355.jpg.png",
-	"DCIM/Camera/PXL_20210826_005225357.jpg.png",
-	"DCIM/Camera/PXL_20220713_010128406.jpg.png",
-	"DCIM/Camera/PXL_20220624_190259880.jpg.png",
-	"DCIM/Camera/PXL_20211231_044243988.jpg.png",
-	"DCIM/Camera/PXL_20220328_023247048.jpg.png",
-	"DCIM/Camera/PXL_20220116_232224353.jpg.png",
-	"DCIM/Camera/.trashed-1661002909-PXL_20220719_220721881.jpg.png",
-	"DCIM/Camera/PXL_20210620_173450392.jpg.png",
-	"DCIM/Camera/PXL_20220423_030444981.jpg.png",
-	"DCIM/Camera/PXL_20210620_173441207.jpg.png",
-	"DCIM/Camera/.trashed-1660700146-PXL_20220718_013514454.jpg.png",
-	"DCIM/Camera/PXL_20211225_001551739.jpg.png",
-	"DCIM/Camera/PXL_20210826_004716086.jpg.png",
-	"DCIM/Camera/PXL_20210626_192113944.jpg.png",
-	"DCIM/Camera/.trashed-1660700148-PXL_20220718_013507733.jpg.png",
-	"DCIM/Camera/PXL_20220327_215019748.jpg.png",
-}
-
 // var ThumbnailManifestPath = filepath.Join(ProgramCachePath, "thumbnail.json")
 
 func main() {
@@ -102,9 +68,28 @@ func main() {
 	r.Use(static.Serve("/storage", static.LocalFile(storagePath, false)))
 
 	r.GET("/filepaths", func(c *gin.Context) {
+		// todo chose directory.
+		var filepaths []string
+		err := filepath.WalkDir(storagePath, func(path string, d fs.DirEntry, _ error) error {
+			// Skip directories.
+			if d.IsDir() {
+				return nil
+			}
+			// Path relative to the storage path.
+			pathRel, err := filepath.Rel(storagePath, path)
+			if err != nil {
+				return err
+			}
+			filepaths = append(filepaths, pathRel)
+			return nil
+		})
+		if err != nil {
+			log.Println(err)
+			c.JSON(500, gin.H{})
+			return
+		}
 		c.JSON(200, gin.H{
-			// "paths": []string{},
-			"paths": somepaths,
+			"paths": filepaths,
 		})
 	})
 
@@ -112,6 +97,18 @@ func main() {
 	r.GET(fmt.Sprintf("/thumbnail/*%s", thumbnailPathId), func(c *gin.Context) {
 		thumbnailRelPath := c.Param(thumbnailPathId)
 		thumbnailPath := filepath.Join(ThumbnailPath, thumbnailRelPath)
+		// If thumbnail exists then serve it.
+		if _, err := os.Stat(thumbnailPath); !os.IsNotExist(err) {
+			c.File(thumbnailPath)
+			return
+		}
+		// Otherwise create the thumbnail and serve.
+		// TODO: we could write the front end and disk at in parallel.
+		mediaPath := filepath.Join(storagePath, thumbnailRelPath)
+		if err := CreateThumbnail(thumbnailPath, mediaPath); err != nil{
+			c.AbortWithError(500, err)
+			return
+		}
 		c.File(thumbnailPath)
 	})
 	r.Run()
