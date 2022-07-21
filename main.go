@@ -2,25 +2,15 @@ package main
 
 import (
 	"fmt"
-	"image"
-	"image/png"
 	"io/fs"
 	"log"
-	"mime"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/adrg/xdg"
 	"github.com/fsnotify/fsnotify"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
-	// "github.com/nfnt/resize"
-	"github.com/disintegration/imaging"
-
-	_ "github.com/mdouchement/dng"
-	_ "golang.org/x/image/webp"
-	_ "image/jpeg"
 )
 
 const ProgramName = "android-photo-viewer"
@@ -58,45 +48,10 @@ func main() {
 			}
 			return nil
 		}
-
-		// Filter out non images/video.
-		mimeType := mime.TypeByExtension(filepath.Ext(path))
-		mediaType := strings.Split(mimeType, "/")[0]
-		switch mediaType {
-		case "video":
-		case "image":
-			// Thumbnail paths
-			thumbnailPathRel := fmt.Sprintf("%s.png", pathRel)
-			thumbnailPath := filepath.Join(ThumbnailPath, thumbnailPathRel)
-
-			// If thumbnail exists skip.
-			if _, err := os.Stat(thumbnailPath); !os.IsNotExist(err) {
-				return nil
-			}
-
-			// Create thumbnail from image.
-			f, err := os.Open(path)
-			if err != nil {
-				return err
-			}
-			defer f.Close()
-			img, _, err := image.Decode(f)
-			if err != nil {
-				return err
-			}
-			// thumbnail := resize.Thumbnail(200, 200, img, resize.Bilinear)
-			thumbnail := imaging.Thumbnail(img, 200, 200, imaging.Linear)
-
-			// Save thumbnail
-			fThumb, err := os.OpenFile(thumbnailPath, os.O_CREATE|os.O_RDWR, 0755)
-			if err != nil {
-				return err
-			}
-			defer fThumb.Close()
-			if err := png.Encode(fThumb, thumbnail); err != nil {
-				return err
-			}
-		}
+		// // Thumbnail paths
+		// thumbnailPathRel := fmt.Sprintf("%s.png", pathRel)
+		// thumbnailPath := filepath.Join(ThumbnailPath, thumbnailPathRel)
+		// return CreateThumbnail(thumbnailPath, path)
 		return nil
 	})
 	if err != nil {
@@ -111,7 +66,13 @@ func main() {
 	// Routes
 	r.Use(static.Serve("/", static.LocalFile("./public", false)))
 	r.Use(static.Serve("/storage", static.LocalFile(storagePath, false)))
-	r.Use(static.Serve("/thumbnail", static.LocalFile(ThumbnailPath, false)))
+
+	const thumbnailPathId = "thumbnail"
+	r.GET(fmt.Sprintf("/thumbnail/*%s", thumbnailPathId), func(c *gin.Context) {
+		thumbnailRelPath := c.Param(thumbnailPathId)
+		thumbnailPath := filepath.Join(ThumbnailPath, thumbnailRelPath)
+		c.File(thumbnailPath)
+	})
 	r.Run()
 }
 
@@ -132,7 +93,6 @@ func watch(path string) {
 	}
 	defer watcher.Close()
 
-	done := make(chan bool)
 	go func() {
 		for {
 			select {
@@ -141,19 +101,15 @@ func watch(path string) {
 					return
 				}
 				log.Println("event:", event)
-				if event.Op&fsnotify.Write == fsnotify.Write {
-					log.Println("modified file:", event.Name)
-				}
 				switch event.Op {
-				// Create thumbnail?
-				case fsnotify.Create:
+				// // Create thumbnail?
+				// case fsnotify.Create:
 				// Update thumbnail.
 				case fsnotify.Write:
-				// Remove.
-				case fsnotify.Remove:
-				// Filepaths.
+				// // Remove thumbnail or do nothing?
+				// case fsnotify.Remove:
+				// Rename thumbnail if it exists.
 				case fsnotify.Rename:
-					// case fsnotify.Chmod:
 				}
 			case err, ok := <-watcher.Errors:
 				if !ok {
@@ -187,6 +143,4 @@ func watch(path string) {
 			log.Fatal(err)
 		}
 	}
-	<-done
-
 }

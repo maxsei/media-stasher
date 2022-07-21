@@ -10,4 +10,5 @@ require (
 	github.com/gin-gonic/gin v1.8.1
 	github.com/mdouchement/dng v0.0.0-20170415183926-292bb2b0015a
 	golang.org/x/image v0.0.0-20220617043117-41969df76e82
+	golang.org/x/tools v0.0.0-20180917221912-90fa682c2a6e
 )
