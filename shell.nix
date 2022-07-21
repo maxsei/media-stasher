@@ -28,5 +28,6 @@
 	docker
         go
         nodejs-16_7_0
+	entr
       ];
     }
