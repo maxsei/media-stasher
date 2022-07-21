@@ -7,5 +7,5 @@ run: build
 	echo "Running binary"
 	./bin/out
 fmt:
-	echo "Running goimports"
 	go run golang.org/x/tools/cmd/goimports -w .
+	go fmt -w .
