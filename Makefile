@@ -8,6 +8,6 @@ build: fmt
 	npm run build
 run: build
 	./bin/out
-dev:
+dev: fmt
 	npm run dev &
-	find -name '*.go' | entr -sr 'go generate ./...; go run *.go'
+	find -name '*.go' | entr -sr ' go run *.go'

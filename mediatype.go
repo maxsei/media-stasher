@@ -6,6 +6,18 @@ import (
 	"strings"
 )
 
+func init() {
+	// trusting this list: https://stackoverflow.com/questions/43473056/which-mime-type-should-be-used-for-a-raw-image
+	extMime := map[string]string{
+		".dng": "image/x-adobe-dng",
+	}
+	for ext, mimeType := range extMime {
+		if err := mime.AddExtensionType(ext, mimeType); err != nil {
+			panic(err)
+		}
+	}
+}
+
 //go:generate go run github.com/abice/go-enum -f=$GOFILE
 
 // ENUM(

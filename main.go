@@ -78,7 +78,7 @@ func main() {
 			// Filter out media types we don't use.
 			mediaType, err := MediaTypeFromFilepath(path)
 			if err != nil {
-				log.Println(err)
+				log.Printf("%s %v", path, err)
 				return nil
 			}
 			if mediaType == MediaTypeOther {
