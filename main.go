@@ -75,6 +75,15 @@ func main() {
 			if d.IsDir() {
 				return nil
 			}
+			// Filter out media types we don't use.
+			mediaType, err := MediaTypeFromFilepath(path)
+			if err != nil {
+				log.Println(err)
+				return nil
+			}
+			if mediaType == MediaTypeOther {
+				return nil
+			}
 			// Path relative to the storage path.
 			pathRel, err := filepath.Rel(storagePath, path)
 			if err != nil {

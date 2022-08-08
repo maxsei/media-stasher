@@ -7,7 +7,6 @@ import (
 	"mime"
 	"os"
 	"path/filepath"
-	"strings"
 
 	// Image codecs.
 	_ "image/jpeg"
@@ -23,15 +22,14 @@ func CreateThumbnail(dst, src string) error {
 	if _, err := os.Stat(dst); !os.IsNotExist(err) {
 		return nil
 	}
-	// Filter out non images/video.
-	mimeType := mime.TypeByExtension(filepath.Ext(src))
-	mediaType, _, err := mime.ParseMediaType(mimeType)
+	// Get thumbnail from supported media types.
+	srcMediaType, err := MediaTypeFromFilepath(src)
 	if err != nil {
 		return err
 	}
 	var img image.Image
-	switch strings.Split(mediaType, "/")[0] {
-	case "video":
+	switch srcMediaType {
+	case MediaTypeVideo:
 		// Create thumbnail from video.
 		// Open context from file.
 		ctx, err := ffmpegio.OpenContext(src)
@@ -62,7 +60,7 @@ func CreateThumbnail(dst, src string) error {
 		if err != nil {
 			return err
 		}
-	case "image":
+	case MediaTypeImage:
 		// Open Image.
 		f, err := os.Open(src)
 		if err != nil {
@@ -74,7 +72,8 @@ func CreateThumbnail(dst, src string) error {
 			return err
 		}
 	default:
-		return fmt.Errorf("unkown media type: %s", mediaType)
+		mimeType := mime.TypeByExtension(filepath.Ext(src))
+		return fmt.Errorf("unsupoorted mime type: %v", mimeType)
 	}
 	// Create thumbnail from image.
 	thumbnail := imaging.Thumbnail(img, 200, 200, imaging.Linear)
