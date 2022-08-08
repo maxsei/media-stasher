@@ -45,9 +45,17 @@ func CreateThumbnail(dst, src string) error {
 			return err
 		}
 		defer frame.Close()
-		// Read in a single frame.
-		if err := ctx.Read(frame); err != nil {
-			return err
+		// Read in a single frame ignoring skip frames.
+	readLoop:
+		for {
+			switch err := ctx.Read(frame); err {
+			// case ffmpegio.GoFFMPEGIO_ERROR_EOF:
+			case ffmpegio.GoFFMPEGIO_ERROR_SKIP:
+			case nil:
+				break readLoop
+			default:
+				return err
+			}
 		}
 		// Get frame as RGBA image.
 		img, err = frame.ImageRGBA()
