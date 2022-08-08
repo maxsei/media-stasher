@@ -105,7 +105,7 @@ func main() {
 		// Otherwise create the thumbnail and serve.
 		// TODO: we could write the front end and disk at in parallel.
 		mediaPath := filepath.Join(storagePath, thumbnailRelPath)
-		if err := CreateThumbnail(thumbnailPath, mediaPath); err != nil{
+		if err := CreateThumbnail(thumbnailPath, mediaPath); err != nil {
 			c.AbortWithError(500, err)
 			return
 		}
