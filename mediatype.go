@@ -9,7 +9,10 @@ import (
 func init() {
 	// trusting this list: https://stackoverflow.com/questions/43473056/which-mime-type-should-be-used-for-a-raw-image
 	extMime := map[string]string{
-		".dng": "image/x-adobe-dng",
+		// For now there is no reason to support dng since they are not
+		// supported by browsers and there's not much support for
+		// decoding them in go.
+		// ".dng": "image/x-adobe-dng",
 	}
 	for ext, mimeType := range extMime {
 		if err := mime.AddExtensionType(ext, mimeType); err != nil {

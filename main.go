@@ -75,6 +75,9 @@ func main() {
 			if d.IsDir() {
 				return nil
 			}
+			if filepath.Ext(path) != ".dng" {
+				return nil
+			}
 			// Filter out media types we don't use.
 			mediaType, err := MediaTypeFromFilepath(path)
 			if err != nil {
