@@ -13,7 +13,8 @@ import (
 
 	"github.com/disintegration/imaging"
 	"github.com/maxsei/ffmpegio/ffmpegio"
-	_ "github.com/mdouchement/dng"
+
+	// _ "github.com/mdouchement/dng"
 	_ "golang.org/x/image/webp"
 )
 
