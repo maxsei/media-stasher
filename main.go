@@ -11,6 +11,7 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
+	"github.com/maxsei/media-stasher/pkg/mediatype"
 )
 
 const ProgramName = "android-photo-viewer"
@@ -76,12 +77,12 @@ func main() {
 				return nil
 			}
 			// Filter out media types we don't use.
-			mediaType, err := MediaTypeFromFilepath(path)
+			mediaType, err := mediatype.MediaTypeFromFilepath(path)
 			if err != nil {
 				log.Printf("%s %v", path, err)
 				return nil
 			}
-			if mediaType == MediaTypeOther {
+			if mediaType == mediatype.MediaTypeOther {
 				return nil
 			}
 			// Path relative to the storage path.
