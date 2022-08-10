@@ -1,15 +1,17 @@
+PROGRAM_NAME=media-stasher
+
 all: build
 fmt:
 	go generate ./...
 	go run golang.org/x/tools/cmd/goimports -w .
 	go fmt
 build: fmt
-	go build -o ./bin/out $(filter-out ./tools.go, $(wildcard ./*.go))
+	go build -o ./bin/$(PROGRAM_NAME) $(filter-out ./tools.go, $(wildcard ./*.go))
 	npm run build
 run: build
-	./bin/out
+	./bin/$(PROGRAM_NAME)
 debug: build
-	go run github.com/go-delve/delve/cmd/dlv exec ./bin/out
+	go run github.com/go-delve/delve/cmd/dlv exec ./bin/$(PROGRAM_NAME)
 dev: fmt
 	npm run dev &
 	find -name '*.go' | entr -sr ' go run *.go'

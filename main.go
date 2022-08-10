@@ -15,12 +15,17 @@ import (
 	"github.com/maxsei/media-stasher/pkg/thumbnail"
 )
 
-const ProgramName = "android-photo-viewer"
+var (
+	ProgramName      string
+	ProgramCachePath string
+	ThumbnailPath    string
+)
 
-var ProgramCachePath = filepath.Join(xdg.CacheHome, ProgramName)
-var ThumbnailPath = filepath.Join(ProgramCachePath, "thumbnail")
-
-// var ThumbnailManifestPath = filepath.Join(ProgramCachePath, "thumbnail.json")
+func init() {
+	ProgramName = filepath.Base(os.Args[0])
+	ProgramCachePath = filepath.Join(xdg.CacheHome, ProgramName)
+	ThumbnailPath = filepath.Join(ProgramCachePath, "thumbnail")
+}
 
 func main() {
 	storagePath := "/home/mschulte/Documents/pixel4a-backup/Internal shared storage/"
