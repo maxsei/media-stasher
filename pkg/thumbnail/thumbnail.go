@@ -8,13 +8,13 @@ import (
 	"os"
 	"path/filepath"
 
-	// Image codecs.
 	_ "image/jpeg"
 
 	"github.com/disintegration/imaging"
 	"github.com/maxsei/ffmpegio/ffmpegio"
 
 	// _ "github.com/mdouchement/dng"
+	"github.com/maxsei/media-stasher/pkg/mediatype"
 	_ "golang.org/x/image/webp"
 )
 
@@ -24,13 +24,13 @@ func CreateThumbnail(dst, src string) error {
 		return nil
 	}
 	// Get thumbnail from supported media types.
-	srcMediaType, err := MediaTypeFromFilepath(src)
+	srcMediaType, err := mediatype.MediaTypeFromFilepath(src)
 	if err != nil {
 		return err
 	}
 	var img image.Image
 	switch srcMediaType {
-	case MediaTypeVideo:
+	case mediatype.MediaTypeVideo:
 		// Create thumbnail from video.
 		// Open context from file.
 		ctx, err := ffmpegio.OpenContext(src)
@@ -61,7 +61,7 @@ func CreateThumbnail(dst, src string) error {
 		if err != nil {
 			return err
 		}
-	case MediaTypeImage:
+	case mediatype.MediaTypeImage:
 		// Open Image.
 		f, err := os.Open(src)
 		if err != nil {

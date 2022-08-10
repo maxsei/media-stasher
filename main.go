@@ -12,6 +12,7 @@ import (
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/maxsei/media-stasher/pkg/mediatype"
+	"github.com/maxsei/media-stasher/pkg/thumbnail"
 )
 
 const ProgramName = "android-photo-viewer"
@@ -115,7 +116,7 @@ func main() {
 		// Otherwise create the thumbnail and serve.
 		// TODO: we could write the front end and disk at in parallel.
 		mediaPath := filepath.Join(storagePath, thumbnailRelPath)
-		if err := CreateThumbnail(thumbnailPath, mediaPath); err != nil {
+		if err := thumbnail.CreateThumbnail(thumbnailPath, mediaPath); err != nil {
 			c.AbortWithError(500, err)
 			return
 		}
